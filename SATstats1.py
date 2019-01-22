@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 
-SAT = pd.read_csv('Ed Data\SAT_dataframe.csv',index_col=0)
+SAT = pd.read_csv('res/SAT_dataframe.csv',index_col=0)
 """
 Run descriptive statistics
 """
@@ -27,15 +27,15 @@ for col in SAT.columns[0:4]:
     col_min_score = SAT[col][col_min]
     print("Max " + col + ': ' + str(col_max_id)+ ' ' + str(col_max_name) + ', ' + str(col_max_score ))
     print("Min " + col + ': ' + str(col_min_id)+ ' ' + str(col_min_name) + ', ' + str(col_min_score ))
-    
+
     col_score = SAT[col].dropna()
     col_mean = np.mean(col_score)
     print("Mean " + col + ': '+ str(col_mean))
     col_med = np.median(col_score)
     print("Median " + col + ': '+ str(col_med))
-    
+
     print("")
-    
+
     if col_max_score <=800:
         scrange=[200,800]
     elif col_max_score > 1600:
@@ -46,9 +46,9 @@ for col in SAT.columns[0:4]:
     quartiles = np.percentile(col_score,[25,75])
     iqr = quartiles[1]-quartiles[0]
     deciles = np.percentile(col_score,[10,20,30,40,50,60,70,80,90, 95, 99])
-        
+
     chart=plt.figure(figsize=[16,6])
-    
+
     chart.add_subplot(1,2,1)
     histdata=plt.hist(col_score, edgecolor='black')
     ymax=max(histdata[0])
@@ -66,15 +66,15 @@ for col in SAT.columns[0:4]:
     plt.text(1.2*col_mean,0.8*ymax,medtext,color='red')
     plt.text(1.2*col_mean,0.7*ymax,meantext,color='green')
     plt.title(col)
-    
-    
+
+
     iqrtext = "IQR = %i" % int(iqr)
     mintext = "Min - %i |" % int(col_min_score)
     Q1text = "Q1 - %i |" % int(quartiles[0])
     medtext = "Med | %i" % int(col_med)
     Q3text = "| Q3 - %i" % int(quartiles[1])
     maxtext = "| Max - %i" % int(col_max_score)
-    
+
     chart.add_subplot(1,2,2)
     plt.boxplot(col_score, vert=False)
     plt.xlim(scrange)

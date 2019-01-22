@@ -52,8 +52,8 @@ SAT['School_Num'] = school_num
 
 #print(math)
 
-LCGMS = pd.read_excel('src\LCGMS_SchoolData_additional_geocoded_fields_added_.xlsx')
-zipdata = pd.read_excel('src\MedianZip-2006-2010.xlsx')
+LCGMS = pd.read_excel('res/LCGMS_SchoolData_additional_geocoded_fields_added_.xlsx')
+zipdata = pd.read_excel('res/MedianZIP-2006-2010.xlsx')
 #print(LCGMS.head())
 #geo_data_raw = LCGMS[['ATS System Code','NTA_Name','Latitude','Longitude']]
 
@@ -114,4 +114,4 @@ sat_columns = ['sat_critical_reading_avg_score','sat_math_avg_score','sat_writin
                'Zip','Nhood','Med Income','Latitude','Longitude']
 SAT = SAT[sat_columns]
 
-SAT.to_csv('src\SAT_dataframe.csv')
+SAT.to_csv('res/SAT_dataframe.csv')
