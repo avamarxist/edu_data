@@ -33,6 +33,7 @@ for i in range(len(math)):
 SAT['Total_1600'] = total_1600
 
 district=[]
+borough = []
 school_num = []
 for i in range(len(math)):
     if SAT['dbn'][i] != None:
@@ -40,10 +41,16 @@ for i in range(len(math)):
             dist = dist_search.search(SAT['dbn'][i])
             district.append(SAT['dbn'][i][dist.start():dist.end()])
 
-            school_search = re.compile('(?<=\d\d)[A-Z]\d+')
+            boro_search = re.compile('(?<=\d\d)[A-Z]+')
+            boro = boro_search.search(SAT['dbn'][i])
+            borough.append(SAT['dbn'][i][boro.start():boro.end()])
+
+            school_search = re.compile('(?<=[A-Z])\d+')
             school = school_search.search(SAT['dbn'][i])
             school_num.append(SAT['dbn'][i][school.start():school.end()])
+
 SAT['District'] = district
+SAT['Boro'] = borough
 SAT['School_Num'] = school_num
 
 
@@ -110,7 +117,7 @@ SAT['Med Income'] = income
 
 #Check the columns in the main for loop if you change this
 sat_columns = ['sat_critical_reading_avg_score','sat_math_avg_score','sat_writing_avg_score',
-               'Total_1600','num_of_sat_test_takers','dbn','District','School_Num','school_name',
+               'Total_1600','num_of_sat_test_takers','dbn','Boro','District','School_Num','school_name',
                'Zip','Nhood','Med Income','Latitude','Longitude']
 SAT = SAT[sat_columns]
 
