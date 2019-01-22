@@ -39,7 +39,7 @@ for i in range(len(math)):
             dist_search = re.compile('^\d\d')
             dist = dist_search.search(SAT['dbn'][i])
             district.append(SAT['dbn'][i][dist.start():dist.end()])
-            
+
             school_search = re.compile('(?<=\d\d)[A-Z]\d+')
             school = school_search.search(SAT['dbn'][i])
             school_num.append(SAT['dbn'][i][school.start():school.end()])
@@ -52,8 +52,8 @@ SAT['School_Num'] = school_num
 
 #print(math)
 
-LCGMS = pd.read_excel('Ed Data\LCGMS_SchoolData_additional_geocoded_fields_added_.xlsx')
-zipdata = pd.read_excel('Ed Data\MedianZip-2006-2010.xlsx')
+LCGMS = pd.read_excel('src\LCGMS_SchoolData_additional_geocoded_fields_added_.xlsx')
+zipdata = pd.read_excel('src\MedianZip-2006-2010.xlsx')
 #print(LCGMS.head())
 #geo_data_raw = LCGMS[['ATS System Code','NTA_Name','Latitude','Longitude']]
 
@@ -107,11 +107,11 @@ for z in SAT['Zip']:
     else:
         income.append('-')
 SAT['Med Income'] = income
-    
+
 #Check the columns in the main for loop if you change this
 sat_columns = ['sat_critical_reading_avg_score','sat_math_avg_score','sat_writing_avg_score',
                'Total_1600','num_of_sat_test_takers','dbn','District','School_Num','school_name',
                'Zip','Nhood','Med Income','Latitude','Longitude']
 SAT = SAT[sat_columns]
 
-SAT.to_csv('Ed Data\SAT_dataframe.csv')
+SAT.to_csv('src\SAT_dataframe.csv')
