@@ -13,14 +13,17 @@ SAT = pd.read_json("https://data.cityofnewyork.us/resource/734v-jeq5.json")
 math = SAT['sat_math_avg_score']
 english=SAT['sat_critical_reading_avg_score']
 writing=SAT['sat_writing_avg_score']
+test_takers = SAT['num_of_sat_test_takers']
 
 math = math.apply(pd.to_numeric,args=('coerce',))
 english = english.apply(pd.to_numeric,args=('coerce',))
 writing = writing.apply(pd.to_numeric,args=('coerce',))
+test_takers = test_takers.apply(pd.to_numeric,args=('coerce',))
 
 SAT['sat_math_avg_score'] = math
 SAT['sat_critical_reading_avg_score'] = english
 SAT['sat_writing_avg_score'] = writing
+SAT['num_of_sat_test_takers'] = test_takers
 
 #print("Test: len(math) = " + str(len(math)) + ' len(SAT[math])) = ' + str(len(SAT['sat_math_avg_score'])))
 
