@@ -40,6 +40,7 @@ regents_stats['iqr'] = [ st.iqr(regents_df[col].astype(float)) for col in num_co
 regents_stats['five_num'] = [ np.percentile(regents_df[col].astype(float),[0, 25, 50, 75, 100]) for col in num_cols ]
 regents_stats['deciles'] = [ np.percentile(regents_df[col].astype(float),[10,20,30,40,50,60,70,80,90]) for col in num_cols ]
 
+#print(regents_stats['col_median'])
 # algebra_scores = regents_df[regents_df['Regents Exam'] == 'common core algebra']
 # means = [ np.mean(algebra_scores[col].astype(float)) for col in num_cols ]
 # alg_stats = pd.DataFrame(means, index = num_cols, columns = ['col_mean'])
@@ -64,19 +65,21 @@ regents_stats['deciles'] = [ np.percentile(regents_df[col].astype(float),[10,20,
 # plt.xticks(rotation = 90)
 # plt.show()
 
-# by_exam = {}
-# for stat in num_cols:
-#     for category in ['demographic_variable','regents_exam']:
-#         for cat in set(regents_df[category]):
-#             by_exam = list(regents_df[regents_df[category] == cat][stat])
-#             fig = plt.figure()
-#             plt.hist(by_exam, edgecolor = 'black')
-#             #plt.plot([0, len(by_exam.keys())+0.5],[regents_stats['col_median'][stat], regents_stats['col_median'][stat]])
-#             plt.xlabel(stat)
-#             plt.title(category + " - " + cat)
-#             cat = cat.replace(" ","_")
-#             cat = cat.replace("/","_")
-#             #fig.savefig('out/hist_'+category+"--"+cat +"--"+stat+".png")
-#             plt.close()
-# #plt.show()
-plt.scatter(regents_df['mean_score'],regents_df['percent_scoring_65_or_above'])
+by_exam = {}
+for stat in num_cols:
+    for category in ['demographic_variable','regents_exam']:
+        for cat in set(regents_df[category]):
+            by_exam = list(regents_df[regents_df[category] == cat][stat])
+            fig = plt.figure()
+            hist = plt.hist(by_exam, color = 'powderblue', edgecolor = 'black')
+            mode_freq = np.max(list(hist[0]))
+            plt.plot([np.mean(by_exam), np.mean(by_exam)], [0, np.max(hist[0])], color = 'darkorange', linewidth = 3.0)
+            plt.plot([np.median(by_exam), np.median(by_exam)], [0, np.max(hist[0])], color = 'darkorchid', linewidth = 3.0)
+            plt.xlabel(stat)
+            plt.title(category + " - " + cat)
+            cat = cat.replace(" ","_")
+            cat = cat.replace("/","_")
+            #fig.savefig('out/hist_'+category+"--"+cat +"--"+stat+".png")
+            plt.close()
+#plt.show()
+# plt.scatter(regents_df['mean_score'],regents_df['percent_scoring_65_or_above'])
