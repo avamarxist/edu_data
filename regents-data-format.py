@@ -9,47 +9,48 @@ Created on Sat Jan 12 16:41:29 2019
 Construct table for Regents 2015-17 data
 """
 import requests as req
-import pandas
+import pandas as pd
+import numpy
 import sqlalchemy as sa
+import sqlalchemy.dialects.sqlite as sqlite
 
-# json_url = "https://data.cityofnewyork.us/resource/eqwn-dfwq.json"
-# json_req = req.get(json_url)
+"""
+create Dataframe from raw data
+"""
 #
-# regents_dict = json_req.json()
-
-# regents_dict =
+# regents_raw_df = pd.read_excel('res/2015-17-NYC-Regents.xlsx')
 #
-# print(type(regents_dict))
-# print(regents_dict[1])
-# print(regents_dict[1].keys())
-# print(regents_dict[1].values())
+# old_cols = ['School DBN','Year','Regents Exam', 'Total Tested',
+#             'Demographic Category','Demographic Variable','Mean Score',
+#             'Number Scoring Below 65', 'Percent Scoring Below 65',
+#             'Number Scoring 65 or Above', 'Percent Scoring 65 or Above',
+#             'Number Scoring 80 or Above', 'Percent Scoring 80 or Above']
+#
+# new_cols = ['dbn','year','exam_name', 'test_num',
+#             'demo_cat','demo_var','mean_score',
+#             'num_lt_65', 'pct_lt_65',
+#             'num_gt_65', 'pct_gt_65',
+#             'num_gt_80', 'pct_gt_80']
+#
+# num_cols = ['mean_score', 'num_lt_65', 'pct_lt_65','num_gt_65', 'pct_gt_65',
+#             'num_gt_80', 'pct_gt_80']
+#
+# regents_raw_df = regents_raw_df[old_cols]
+# regents_raw_df.columns = new_cols
+#
+# regents_df = regents_raw_df.applymap( lambda x: x.lower() if type(x) == str else x )
+# regents_df = regents_df.applymap( lambda x: None if x == 's' else x )
+# regents_df = regents_df.dropna(axis=0,subset=num_cols,how='all')
+# regents_df = regents_df.applymap( lambda x: float(x) if type(x)==int else x)
+# regents_df['demo_var'] = regents_df['demo_var'].apply( lambda x: 'other races' if x == 'multiple race categories not represented' else x)
+#
+# print('Dataframe size after dropna: ' + str(len(regents_df)))
+#
+#
+# regents_df.to_csv('res/regents_cleaner.csv',index=False)
 
-regents_raw_df = pandas.read_excel('res/2015-17-NYC-Regents.xlsx')
 
-new_cols = ['School DBN','School Name','Year','Regents Exam', 'Total Tested',
-            'Demographic Category','Demographic Variable','Mean Score',
-            'Number Scoring Below 65', 'Percent Scoring Below 65',
-            'Number Scoring 65 or Above', 'Percent Scoring 65 or Above',
-            'Number Scoring 80 or Above', 'Percent Scoring 80 or Above']
-
-regents_raw_df = regents_raw_df[new_cols]
-print(regents_raw_df.columns)
-print('Size of dataframe: {}'.format(len(regents_raw_df)))
-
-regents_df = regents_raw_df.applymap( lambda x: x.lower() if type(x) == str else x )
-print('Size of dataframe: {}'.format(len(regents_df)))
-
-# regents_df.applymap( lambda x: 'NULL' if x == 's' else x )
-# print('Size of dataframe: {}'.format(len(regents_df)))
-
-# score_df = regents_df.loc[regents_df['Mean Score'] == 's']
-# print(score_df.head())
-# print(score_df.tail())
-# print('Size of dataframe: {}'.format(len(score_df)))
-
-regents_df.to_csv('res/regents_cleaner.csv')
 # SAT_df = pandas.read_csv('res/SAT_dataframe.csv')
-#
 # regents_names = [name.lower() for name in regents_df.drop_duplicates(subset='School Name',keep='first')['School Name']]
 # sat_names = [name.lower() for name in SAT_df.drop_duplicates(subset='school_name',keep='first')['school_name']]
 # print(len(regents_names))
@@ -58,28 +59,51 @@ regents_df.to_csv('res/regents_cleaner.csv')
 # print(len(common))
 # print(set(sat_names)-common)
 
-# conn = sa.create_engine('sqlite:///db/nycedudata.db')
+"""
+load from csv if already cleaned
+"""
+regents_df = pd.read_csv('res/regents_cleaner.csv', na_values = 's')
+regents_df = regents_df.applymap( lambda x: None if x == 's' else x )
+regents_df = regents_df.applymap( lambda x: float(x) if type(x)==int else x)
+
+"""
+sqlite stuff
+"""
+engine = sa.create_engine('sqlite:///db/nycedudata.db')
 #
-# conn.execute('CREATE TABLE IF NOT EXISTS Regents (\
-#                 test_id INTEGER PRIMARY KEY AUTOINCREMENT,\
-#                 dbn TEXT,\
-#                 school_name TEXT,\
-#                 school_level TEXT,\
-#                 year NUMERIC,\
-#                 total_tested NUMERIC,\
-#                 demo_category TEXT,\
-#                 demo_variable TEXT,\
-#                 mean_score NUMERIC,\
-#                 num_lt_65 NUMERIC,\
-#                 pct_lt_65 NUMERIC,\
-#                 num_gt_65 NUMERIC,\
-#                 pct_gt_65 NUMERIC,\
-#                 num_gt_80 NUMERIC,\
-#                 pct_gt_80 NUMERIC,\
-#                 FOREIGN KEY (dbn) REFERENCES Schools (dbn),\
-#                 FOREIGN KEY (school_name) REFERENCES Schools (school_name)\
-#                 );')
+
+meta = sa.MetaData()
+schools_table = sa.Table('Schools',meta,autoload=True,autoload_with=engine)
+# regents_table = sa.Table('Regents',meta,autoload=True,autoload_with=engine)
+years_table = sa.Table('Years',meta,autoload=True,autoload_with=engine)
+demo_category_table = sa.Table('Demo_Categories', meta,\
+                sa.Column('demo_cat_id', sqlite.INTEGER, primary_key=True),\
+                sa.Column('demo_cat', sqlite.TEXT),\
+                sa.Column('demo_var', sqlite.TEXT),\
+                sqlite_autoincrement=True)
+demo_category_table.create(engine)
+demo_pairs = list(set(zip(regents_df['demo_cat'],regents_df['demo_var'])))
+values = [{'demo_cat':pair[0],'demo_var':pair[1]} for pair in demo_pairs]
+engine.execute(demo_category_table.insert(),values)
+
+# regents_table = sa.Table('Regents', meta,\
+#                 sa.Column('test_id', sqlite.INTEGER, primary_key=True),\
+#                 sa.Column('dbn', sqlite.TEXT,sa.ForeignKey('Schools.dbn')),\
+#                 sa.Column('year', sqlite.INTEGER,sa.ForeignKey('Years.year')),\
+#                 sa.Column('exam_name',sqlite.TEXT),\
+#                 sa.Column('test_num', sqlite.INTEGER),\
+#                 sa.Column('demo_cat', sqlite.TEXT,sa.ForeignKey('Demo_Categories.demo_cat')),\
+#                 sa.Column('demo_var', sqlite.TEXT,sa.ForeignKey('Demo_Categories.demo_var')),\
+#                 sa.Column('mean_score', sqlite.REAL),\
+#                 sa.Column('num_lt_65', sqlite.INTEGER),\
+#                 sa.Column('pct_lt_65', sqlite.REAL),\
+#                 sa.Column('num_gt_65', sqlite.INTEGER),\
+#                 sa.Column('pct_gt_65', sqlite.REAL),\
+#                 sa.Column('num_gt_80', sqlite.INTEGER),\
+#                 sa.Column('pct_gt_80', sqlite.REAL),\
+#                 sqlite_autoincrement=True)
 #
-# for r in regents_df.index:
-#     values = ('NULL', ) + tuple(regents_df.loc[r])
-#     conn.execute('INSERT INTO Regents VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',values)
+# regents_table.create(engine)
+# ins = regents_table.insert()
+# values = [dict(regents_df.loc[r]) for r in regents_df.index]
+# engine.execute(ins,values)
