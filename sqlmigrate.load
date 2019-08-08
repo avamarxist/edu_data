@@ -1,0 +1,7 @@
+load database
+	from sqlite:///home/bahar/git-repos/edu_data/db/nycedudata.db
+	into postgresql:///EduData
+
+with include drop, create tables, create indexes, reset sequences
+
+set work_mem to '16 MB', maintenance_work_mem to '512 MB';

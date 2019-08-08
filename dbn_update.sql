@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION dbn_update()
+RETURNS trigger AS
+$func$
+BEGIN
+	INSERT INTO schools(dbn) VALUES (NEW.dbn) ON CONFLICT DO NOTHING;
+END
+$func$ LANGUAGE plpgsql;
+
+CREATE TRIGGER dbn_check
+BEFORE INSERT OR UPDATE OF dbn ON regents
+FOR EACH ROW EXECUTE PROCEDURE dbn_update();
